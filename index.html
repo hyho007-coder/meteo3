@@ -3,206 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stazione Meteo - Casa Ale Romano</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Stazione Meteo Ale Roano d. Lia</title>
+    <!-- Chart.js per i grafici -->
+    <script src="https://jsdelivr.net"></script>
+    <!-- Google Fonts -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    
     <style>
+        :root {
+            --bg-color: #0b0f19;       
+            --card-bg: #151f32;        
+            --text-main: #f3f4f6;      
+            --text-muted: #9ca3af;     
+            --temp-color: #ff4a4a;     
+            --press-color: #38bdf8;    
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            --border-color: #22314d;
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
+            padding: 10px 0;
         }
 
         header h1 {
-            font-size: 2.4rem;
-            color: #0f172a;
+            font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 6px;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            line-height: 1.3;
         }
 
         header p {
-            font-size: 1rem;
-            color: #64748b;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 5px;
         }
 
-        .dashboard-grid {
+        /* Sezione Ultima Rilevazione */
+        .live-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            width: 100%;
-            max-width: 750px;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 24px;
-            padding: 35px 25px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-            transition: transform 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        .card .icon-wrapper {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            font-size: 2rem;
-        }
-
-        .card.temp .icon-wrapper {
-            background-color: #fef2f2;
-            color: #ef4444;
-        }
-
-        .card.pres .icon-wrapper {
-            background-color: #f0f9ff;
-            color: #0284c7;
-        }
-
-        .card h2 {
-            font-size: 1.25rem;
-            color: #475569;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             margin-bottom: 12px;
-            font-weight: 600;
+        }
+
+        .card-live {
+            background: var(--card-bg);
+            padding: 18px 15px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-live::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        .card-live.temp::before { background: var(--temp-color); box-shadow: 0 2px 10px var(--temp-color); }
+        .card-live.press::before { background: var(--press-color); box-shadow: 0 2px 10px var(--press-color); }
+
+        .card-live h2 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .card-live .value {
+            font-size: 1.9rem;
+            font-weight: 700;
+        }
+        
+        .card-live.temp .value { color: #ff6b6b; }
+        .card-live.press .value { color: #7dd3fc; }
+
+        /* Contenitore Timestamp */
+        .timestamp-container {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            background: rgba(21, 31, 50, 0.5);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            width: 100%;
+            border: 1px solid rgba(34, 49, 77, 0.4);
+        }
+        
+        .timestamp-container strong { color: #e5e7eb; }
+
+        /* Sezione Statistiche */
+        .stats-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stats-section h3 {
+            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            color: #e5e7eb;
         }
 
-        .data-value {
-            font-size: 2.8rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .unit {
-            font-size: 1.4rem;
-            font-weight: 500;
-            color: #94a3b8;
-            margin-left: 6px;
-        }
-
-        .timestamp {
-            grid-column: 1 / -1;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             text-align: center;
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-top: 15px;
         }
 
-        .error-msg {
-            color: #ef4444;
-            font-size: 1rem;
-            font-weight: 600;
+        .stat-box {
+            padding: 10px 4px;
+            background: #111a2e;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.02);
         }
+
+        .stat-box span {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-box strong {
+            display: block;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        /* Sezione Grafico */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Casa Ale Romano</h1>
-        <p>Stazione Meteo</p>
-    </header>
+    <div class="container">
+        <header>
+            <h1>Stazione Meteo Ale Roano d. Lia</h1>
+            <p>Canale ID: 3516549 &bull; Aggiornamento 5 min</p>
+        </header>
 
-    <main class="dashboard-grid">
-        <div class="card temp">
-            <div class="icon-wrapper">
-                <i class="fa-solid fa-temperature-half"></i>
+        <div id="loader" class="loading">Inizializzazione ultrarapida...</div>
+
+        <div id="dashboard-content" class="hidden">
+            <!-- Valori Real-time -->
+            <div class="live-container">
+                <div class="card-live temp">
+                    <h2>Temperatura</h2>
+                    <div class="value" id="live-temp">-- &deg;C</div>
+                </div>
+                <div class="card-live press">
+                    <h2>Pressione</h2>
+                    <div class="value" id="live-press">-- hPa</div>
+                </div>
             </div>
-            <h2>Temperatura</h2>
-            <div class="data-value" id="temp-val">--<span class="unit">°C</span></div>
-        </div>
 
-        <div class="card pres">
-            <div class="icon-wrapper">
-                <i class="fa-solid fa-gauge-high"></i>
+            <!-- Box di Timestamp Aggiornamento -->
+            <div class="timestamp-container">
+                Ultimo aggiornamento: <strong id="live-timestamp">--/--/---- --:--:--</strong>
             </div>
-            <h2>Pressione</h2>
-            <div class="data-value" id="pres-val">--<span class="unit">hPa</span></div>
-        </div>
 
-        <div class="timestamp" id="time-val">Connessione al sensore in corso...</div>
-    </main>
+            <!-- Stats Temperatura -->
+            <div class="stats-section">
+                <h3>Analisi Temperatura (12h)</h3>
+                <div class="stats-grid">
+                    <div class="stat-box"><span>MIN</span><strong id="temp-min" style="color: #60a5fa;">--</strong></div>
+                    <div class="stat-box"><span>MAX</span><strong id="temp-max" style="color: #f87171;">--</strong></div>
+                    <div class="stat-box"><span>MEDIA</span><strong id="temp-avg" style="color: #e5e7eb;">--</strong></div>
+                </div>
+            </div>
+
+            <!-- Stats Pressione -->
+            <div class="stats-section">
+                <h3>Analisi Pressione (12h)</h3>
+                <div class="stats-grid">
+                    <div class="stat-box"><span>MIN</span><strong id="press-min" style="color: #60a5fa;">--</strong></div>
+                    <div class="stat-box"><span>MAX</span><strong id="press-max" style="color: #f87171;">--</strong></div>
+                    <div class="stat-box"><span>MEDIA</span><strong id="press-avg" style="color: #e5e7eb;">--</strong></div>
+                </div>
+            </div>
+
+            <!-- Grafico -->
+            <div class="chart-container">
+                <canvas id="tsChart"></canvas>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const channelId = "3516549"; 
-        const readApiKey = "TV96LYPRY8JSDVR3"; 
+        const channelID = "3516549";
+        const readAPIKey = "TV96LYPRY8JSDVR3";
+        
+        // Estraiamo solo le ultime 12 ore (720 min) direttamente dal server
+        const url = `https://thingspeak.com{channelID}/feeds.json?api_key=${readAPIKey}&minutes=720`;
 
-        async function updateWeatherStation() {
-            const cacheBuster = new Date().getTime();
-            const url = `https://api.thingspeak.com/channels/${channelId}/feeds/last.json?api_key=${readApiKey}&_=${cacheBuster}`;
+        let myChart = null;
 
+        async function fetchData() {
             try {
-                const response = await fetch(url, { cache: "no-store" });
-                if (!response.ok) throw new Error("Risposta del server non valida");
-                
+                const response = await fetch(url);
                 const data = await response.json();
                 
-                if (data) {
-                    const tempRaw = data.field1; 
-                    const presRaw = data.field2; 
-
-                    const tempContainer = document.getElementById('temp-val');
-                    const presContainer = document.getElementById('pres-val');
-                    const timeContainer = document.getElementById('time-val');
-
-                    // Temperatura a 1 decimale
-                    if (tempRaw !== null && tempRaw !== undefined) {
-                        const tempFormatted = isNaN(tempRaw) ? tempRaw : parseFloat(tempRaw).toFixed(1);
-                        tempContainer.innerHTML = `${tempFormatted}<span class="unit">°C</span>`;
-                    } else {
-                        tempContainer.innerHTML = `<span class="error-msg">N/D</span>`;
-                    }
-
-                    // Pressione a 1 decimale
-                    if (presRaw !== null && presRaw !== undefined) {
-                        const presFormatted = isNaN(presRaw) ? presRaw : parseFloat(presRaw).toFixed(1);
-                        presContainer.innerHTML = `${presFormatted}<span class="unit">hPa</span>`;
-                    } else {
-                        presContainer.innerHTML = `<span class="error-msg">N/D</span>`;
-                    }
-
-                    const timestamp = new Date(data.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    timeContainer.innerHTML = `Ultimo dato ricevuto alle ore: <b>${timestamp}</b>`;
+                if(!data.feeds || data.feeds.length === 0) {
+                    document.getElementById('loader').innerText = "Nessun dato registrato nelle ultime 12 ore.";
+                    return;
                 }
-            } catch (error) {
-                console.error("Errore di sincronizzazione:", error);
-                document.getElementById('time-val').innerHTML = "<span style='color: #ef4444;'>Problema di rete. Tentativo di riconnessione...</span>";
-            }
-        }
 
-        // Avvio iniziale immediato
-        updateWeatherStation();
-        
-        // Loop di aggiornamento impostato a 1 secondo (1000ms)
-        setInterval(updateWeatherStation, 1000);
-    </script>
-</body>
-</html>
+                const allLabels = [];
+                const allTemp = [];
+                const allPress = [];
+
+                // 1. Processamento array completi (Indispensabile per Min, Max e Media reali)
+                data.feeds.forEach(feed => {
+                    const date = new Date(feed.created_at);
+                    const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    const t = parseFloat(feed.field1);
+                    const p = parseFloat(feed.field2);
+
+                    if (!isNaN(t) && !isNaN(p)) {
+                        allLabels.push(timeString);
+                        allTemp.push(t);
+                        allPress.push(p);
+                    }
+                });
+
+                // Aggiornamento Box Live
+                const ultimoFeed = data.feeds[data.feeds.length - 1];
+                document.getElementById('live-temp').innerHTML = `${parseFloat(ultimoFeed.field1).toFixed(1)} <span style="font-size:1.1rem; color:var(--text-muted); font-weight:400;">&deg;C</span>`;
+                document.getElementById('live-press').innerHTML = `${parseFloat(ultimoFeed.field2).toFixed(0)} <span style="font-size:1.1rem; color:var(--text-muted); font-weight:400;">hPa</span>`;
+
+                // Aggiornamento Timestamp
+                const dataUltimoDato = new Date(ultimoFeed.created_at);
